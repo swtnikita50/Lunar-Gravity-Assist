@@ -1,0 +1,54 @@
+\begindata
+
+  KERNELS_TO_LOAD = (
+                
+			   'kernels/kernels/NAIF0012.tls'
+		    
+			   'kernels/kernels/pck00010.tpc'
+		    
+			   'kernels/kernels/gm_de431.tpc'
+
+                     'kernels/kernels/earth_000101_220822_220529.bpc'
+
+			   'kernels/kernels/de432s.bsp'
+
+			   'kernels/kernels/2001QJephemeris.bsp'
+
+			   'kernels/kernels/2001ephemeris.bsp'
+
+                     'kernels/kernels/geophysical.ker'
+
+                     'kernels/kernels/ECLIPJ2000_DE405.tf'
+                    )                    
+
+\begintext
+
+
+KERNELS:
+1) Leap Seconds Kernels (LSK)
+      a) Text LSK (.tls)
+            - naif0011.tls
+
+2) Planetary Constant Kernels (PCK) 
+      a) Binary PCK (.bpc)
+            --> Earth high-precision
+                  - earth_000101_150929_150708.bpc (from January 01 2000 to September 29 2015)        
+
+            --> Earth low-precision
+                  - earth_070425_370426_predict.bpc
+
+      b) Text PCK (.tpc)
+            - gm_de431.tpc
+            - pck00010.tpc
+
+3) Kernels for ephemeris of vehicles, planets, satellites, comets, asteroids (SPK)
+      a) Binary SPK (.bsp)
+            - de430.bsp
+
+4) Frame Kernels (FK)
+      a) Text FK (.tf) 
+            - MOD.tf    --> Mean Of Date
+            - TOD.tf    --> True Of Date
+            - ECLIPJ2000_DE405.tf --> Ecliptic J2000 frame
+
+
