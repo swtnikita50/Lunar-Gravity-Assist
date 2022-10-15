@@ -97,3 +97,71 @@ fprintf("\n Starting Analysis for Descending node...\n");
 fprintf('\n ===================================================================== \n');
 [kepSC_F3, nu_esc, flybyEt, kepM_F3] = moon2escape(V_esc, kepMesc_F3, -1, muE, r_esc, escapeEt, tol_OMEGA, tol_V);
 
+
+gamma_esc = atan(e_2*sin(nu_esc/(1+e_2*cos(nu_esc))));
+beta = pi/2-nu_esc+gamma_esc-PHI;
+v_inf = norm(cartesianSC2_F3(4:6));
+gamma_esc_d = atan(e_2*sin(nu_esc/(1+e_2*cos(nu_esc))));
+beta_d = pi/2-nu_esc+gamma_esc_d-PHI;
+v_inf_d = norm(cartesianSC2_F3(4:6));
+
+
+%% PERIGEE TO MOON TRAJECTORY
+i_1 = 0:0.01:pi;
+r_p = 6371+200; % km
+v_inf = v_inf_a;
+r_M = norm(cartesianM2_F3(1:3));
+r_psFeasible = 1737.4+50;
+
+for i= 1:length(i_1)
+    fprintf('\ni_1 value = %f',i_1(i))
+    k_a = muE^2/r_p^2;
+    k_b = -4*muE^2*r_p*(cos(i_1(i)))^2/r_M^3-2*muE^2/r_p^2-2*(v_inf^2*muE-3*muE^2/r_M)/r_p;
+    k_c = (v_inf^2 - 3*muE/r_M)^2 + 2*(v_inf^2*muE-3*muE^2/r_M)/r_p+muE^2/r_p^2-4*muE^2*r_p*(cos(i_1(i)))^2/r_M^3;
+
+    if i_1(i)<=pi/2
+        e_1 = max(roots([k_a, k_b, k_c]));
+    else
+        e_1 = min(roots([k_a, k_b, k_c]));
+    end
+    if e_1 >1
+        a_1 = -r_p/(e_1-1);
+    else
+        a_1 = r_p/(1+e_1);
+        r_a = a_1*(1+e_1);
+        if r_a < r_M
+            cprintf('_Error',"\nError: Apogee radius is smaller than Moon's Orbit radius.\n")
+            continue;
+        end
+    end
+    nu_1 = acos((a_1*(1-e_1.^2)/r_M-1)./e_1);
+    omega_1 = -nu_1; % flyby at ascending node
+    nu_0 = acos((a_1*(1-e_1.^2)/r_p-1)./e_1);
+
+    if isVesczPositive 
+        OMEGA_1 = OMEGA_2; % flyby at same nodes (both ascending)
+    else
+        OMEGA_1 = OMEGA_2+pi;   % flyby at opposite nodes (1:ascending, 2:descending)
+    end
+
+
+    [cartesianSC1_F3(1:3),cartesianSC1_F3(4:6)] = po2pv([a_1, e_1, i_1(i),omega_1, OMEGA_1, nu_1],muE);
+    delta = beta_a+acos(dot((cartesianSC1_F3(4:6)-cartesianM2_F3(4:6)),(cartesianSC2_F3(4:6)-cartesianM2_F3(4:6)))/norm(cartesianSC1_F3(4:6)-cartesianM2_F3(4:6))^2);
+    
+    r_ps = muM*(1-sin(delta/2))/norm(cartesianSC1_F3(4:6)-cartesianM2_F3(4:6))^2*sin(delta/2); 
+    if r_ps < r_psFeasible
+        cprintf('SystemCommand','\nThis r_ps value is not feasible.\n');
+    end
+    
+    
+    plotOrbit([a_1, e_1, i_1(i),omega_1, OMEGA_1, nu_1], nu_0, nu_1, muE, 100, "P2M Trajectory 1 Ascending", 'm'); hold on;
+    plotOrbit(kepMesc_F3, 0, 2*pi, muE, 100, "Moon's Orbit", 'r');
+    U_h = cross([cos(OMEGA_1);sin(OMEGA_1);0],cartesianSC1_F3(4:6));
+    quiver3(0,0,0,10^6*cos(OMEGA_1),10^6*sin(OMEGA_1),0,'displayName','Nodal Vector','color','y');
+    quiver3(0,0,0,10^6*U_h(1),10^6*U_h(2),10^6*U_h(3),'displayName','Angular Momentum Vector','color','c');
+end
+
+
+
+
+
